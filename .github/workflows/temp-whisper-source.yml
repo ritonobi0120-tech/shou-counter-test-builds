@@ -1,0 +1,34 @@
+name: Temporary Whisper source fetch
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/whisper-source-fetch-trigger
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fetch-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fetch whisper.cpp v1.8.4 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch v1.8.4 --recurse-submodules \
+            https://github.com/ggml-org/whisper.cpp.git whisper.cpp
+          tar -czf whisper-cpp-v1.8.4-source.tar.gz whisper.cpp
+          ls -lh whisper-cpp-v1.8.4-source.tar.gz
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisper-cpp-v1.8.4-source
+          path: whisper-cpp-v1.8.4-source.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
